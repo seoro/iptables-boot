@@ -1,0 +1,37 @@
+#!/bin/bash
+### BEGIN INIT INFO
+# Provides: iptables-persist
+# Required-Start: mountkernfs $local_fs
+# Required-Stop: $local_fs
+# Default-Start: 2 3 4 5
+# Default-Stop: 0 1 6
+# Short-Description: Persist iptables rules during power cycles
+### END INIT INFO
+
+CFG=/etc/iptables.boot
+
+case "$1" in
+	start)
+		if [ -a $CFG ]; then
+			/sbin/iptables-restore < $CFG
+			echo "iptables rules restored from disk."
+		else
+			echo "No boot rules on disk."
+			echo "Creating boot rules file from loaded iptables rules."
+			/sbin/iptables-save > $CFG
+		fi
+	 ;;
+
+	stop)
+	restart)
+		/sbin/iptables-save > $CFG
+		echo "iptables rules boot to disk."
+	 ;;
+
+	*)
+		echo "Usage: $0 {start|stop|restart}"
+	;;
+esac
+
+exit 0
+
